@@ -16,11 +16,13 @@ import Error from './pages/Error'
 import CourseManagement from './pages/(Admin)/CourseManagement'
 import FacultyManagement from './pages/(Admin)/FacultyManagement'
 import AdminDashboard from './pages/(Admin)/Dashboard'
+import { Toaster } from 'sonner'
 
 
 function AppLayout() {
   return (
     <div className='bg-[--background  ] h-screen text-[--primary]'>
+       <Toaster richColors/>
       <NavBar />
     <div className='flex h-[calc(100%-60px)] custom-scrollbar'>
       <Routes>

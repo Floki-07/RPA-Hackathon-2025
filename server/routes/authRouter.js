@@ -70,54 +70,125 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.get('/faculties',authenticateToken, async (req, res) => {
-    try {
-        const faculties = await Faculty.find();
-        res.json(faculties);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching faculties' });
-    }
-});
 router.get('/getuser',authenticateToken, async (req, res) => {
     try {
-        let user = await User.findOne({_id:req.user.userId});
+        let user = await User.findOne({_id:req.userId}).select('-password');
         res.status(200).json({user});
 
     } catch (error) {
         res.status(500).json({ message: 'Error fetching faculties' });
     }
 });
+router.get('/faculties',authenticateToken, async (req, res) => {
+    try {
+        const faculties = await Faculty.find();
+        res.status(200).json(faculties);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching faculties' });
+    }
+});
+router.get('/courses',authenticateToken, async (req, res) => {
+    try {
+        const courses = await Course.find();
+        res.status(200).json(courses);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching faculties' });
+    }
+});
+
+router.get('/feedback/user/submitted', authenticateToken, async (req, res) => {
+
+    try {   
+        const feedbacks = await Feedback.find({ userId: req.userId });
+        res.status(200).json(feedbacks);
+    } catch (error) {   
+        res.status(500).json({ message: 'Error fetching feedbacks' });
+    }   
+});
+
 
 // Submit feedback for a faculty
-router.post('/feedback/faculty/:facultyId', authenticateToken, async (req, res) => {
+router.post('/feedback/course/:courseId', authenticateToken, async (req, res) => {
     try {
         const {
             rating,
-            comments
+            comment
         } = req.body;
+        console.log(rating,comment,req.params.courseId);
+        
+        // Check if user has already submitted feedback for this faculty
+        const existingFeedback = await Feedback.findOne({
+            courseId: req.params.courseId,
+            userId: req.userId
+        });
+
+
+        if (existingFeedback) {
+            return res.status(400).json({ message: 'You have already submitted feedback for this faculty' });
+        }
+        let course = await Course.findOne({_id:req.params.courseId});
+        console.log(course);
+        const feedback = new Feedback({
+            courseId: req.params.courseId,
+            userId: req.userId,
+            rating,
+            feedbacktype: 'course',
+            comments:comment
+        });
+        await feedback.save();
+
+        course.feedbacks.push(feedback._id);
+        await course.save();
+       
+        res.status(201).json({ message: 'Feedback submitted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error submitting feedback' });
+    }
+});
+router.post('/feedback/faculty/:facultyId', authenticateToken, async (req, res) => {
+    try {
+        const { rating, comments } = req.body;
+        console.log(req.userId);
+        
+        // Validate rating (ensure it's within a valid range)
+        
+
+        // Check if the faculty exists
+        const faculty = await Faculty.findById(req.params.facultyId);
+        if (!faculty) {
+            return res.status(404).json({ message: 'Faculty not found' });
+        }
 
         // Check if user has already submitted feedback for this faculty
         const existingFeedback = await Feedback.findOne({
             facultyId: req.params.facultyId,
-            userId: req.user._id
+            userId: req.userId,
         });
 
         if (existingFeedback) {
             return res.status(400).json({ message: 'You have already submitted feedback for this faculty' });
         }
 
+        // Create and save the feedback
         const feedback = new Feedback({
             facultyId: req.params.facultyId,
-            userId: req.user._id,
+            userId: req.userId,
             rating,
-            comments
+            comments,
+            feedbacktype: 'faculty',
         });
         await feedback.save();
-        res.status(201).json({ message: 'Feedback submitted successfully' });
+
+        // Add feedback to the faculty's feedbacks array and save
+        faculty.feedbacks.push(feedback._id);
+        await faculty.save();
+
+        res.status(201).json({ message: 'Feedback submitted successfully', feedback });
     } catch (error) {
-        res.status(500).json({ message: 'Error submitting feedback' });
+        res.status(500).json({ message: 'Error submitting feedback', error: error.message });
     }
 });
+
 // Protected route example
 router.get('/protected', authenticateToken, (req, res) => {
     res.json({ message: 'This is a protected route', userId: req.user.userId });
@@ -242,9 +313,9 @@ function authenticateToken(req, res, next) {
 
     if (!token) return res.status(401).json({ message: 'Access denied' });
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) return res.status(403).json({ message: 'Invalid token' });
-        req.user = user;
+        req.userId=user.userId;
         next();
     });
 }

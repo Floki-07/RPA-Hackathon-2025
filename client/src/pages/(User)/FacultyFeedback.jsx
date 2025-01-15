@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X } from 'lucide-react';
+import { MessageCircle, ArrowLeft, X } from 'lucide-react';
+import { Link } from "react-router";
+import { toast } from 'sonner';
 
 const FacultyFeedback = () => {
   const [faculties, setFaculties] = useState([]);
@@ -8,32 +10,67 @@ const FacultyFeedback = () => {
   const [selectedFaculty, setSelectedFaculty] = useState(null);
   const [formData, setFormData] = useState({
     rating: '',
-    teachingQuality: '',
-    communication: '',
-    helpfulness: '',
     comments: ''
   });
   const [loading, setLoading] = useState(true);
-
-  // Fetch faculties on component mount
+  const [submittedFeedbacks, setSubmittedFeedbacks] = useState(new Set());
+  
   useEffect(() => {
-    fetchFaculties();
+    Promise.all([
+      fetchFaculties(),
+      fetchUserSubmittedFeedbacks()
+    ]).then(() => setLoading(false));
   }, []);
 
+  // Fetch all faculties
   const fetchFaculties = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/faculties');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/api/faculties', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setFaculties(response.data);
-      setLoading(false);
     } catch (error) {
       console.error('Error fetching faculties:', error);
-      setLoading(false);
+      toast.error('Error loading faculties');
+    }
+  };
+
+  // Fetch user's submitted feedbacks
+  const fetchUserSubmittedFeedbacks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/api/feedback/user/submitted', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log(response.data);
+      
+            // Assuming the API returns an array of faculty IDs for which the user has submitted feedback
+      setSubmittedFeedbacks(new Set(response.data.map(feedback => feedback.facultyId)));
+    } catch (error) {
+      console.error('Error fetching submitted feedbacks:', error);
     }
   };
 
   const handleOpenModal = (faculty) => {
-    setSelectedFaculty(faculty);
-    setIsModalOpen(true);
+    if (!submittedFeedbacks.has(faculty._id)) {
+      setSelectedFaculty(faculty);
+      setIsModalOpen(true);
+    } else {
+      toast.warning('You have already submitted feedback for this faculty', {
+        position: 'bottom-right',
+        duration: 3000,
+        style: {
+          backgroundColor: 'orange',
+          color: 'white',
+          fontSize: '16px',
+        }
+      });
+    }
   };
 
   const handleCloseModal = () => {
@@ -58,7 +95,7 @@ const FacultyFeedback = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:5000/api/feedback/faculty/${selectedFaculty._id}`,
+        `http://localhost:3000/api/feedback/faculty/${selectedFaculty._id}`,
         formData,
         {
           headers: {
@@ -66,48 +103,104 @@ const FacultyFeedback = () => {
           }
         }
       );
-      alert('Feedback submitted successfully!');
+      
+      // Update the local state with the new submission
+      setSubmittedFeedbacks(prev => new Set([...prev, selectedFaculty._id]));
+
+      toast.success('Feedback submitted successfully!', {
+        position: 'bottom-right',
+        duration: 3000,
+        style: {
+          backgroundColor: 'green',
+          color: 'white',
+          fontSize: '16px',
+        }
+      });
+      
       handleCloseModal();
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      alert('Error submitting feedback. Please try again.');
+      // Check if the error is due to already submitted feedback
+      if (error.response?.status === 400) {
+        toast.error('You have already submitted feedback for this faculty', {
+          position: 'bottom-right',
+          duration: 3000,
+          style: {
+            backgroundColor: 'red',
+            color: 'white',
+            fontSize: '16px',
+          }
+        });
+      } else {
+        toast.error('Error submitting feedback', {
+          position: 'bottom-right',
+          duration: 3000,
+          style: {
+            backgroundColor: 'red',
+            color: 'white',
+            fontSize: '16px',
+          }
+        });
+      }
+      handleCloseModal();
     }
   };
 
-  // Dummy faculty data (replace with your API data)
-  const dummyFaculties = [
-    { _id: 1, name: 'Dr. Bruce Banner', department: 'Computer Science', image: '/api/placeholder/100/100' },
-    { _id: 2, name: 'Dr. Emily Brown', department: 'Physics', image: '/api/placeholder/100/100' },
-    { _id: 3, name: 'Prof. Michael Chen', department: 'Mathematics', image: '/api/placeholder/100/100' },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-8 w-full">
-      <h1 className="text-3xl font-bold text-center mb-8">Faculty Feedback</h1>
-      
-      {/* Faculty Grid */}
+      {/* Rest of the JSX remains the same */}
+      <div className="flex bg--500 w-[58%] items-center justify-between mb-8">
+        <Link to='/dashboard'>
+          <div className="bg-blue-300 h-[60px] w-[60px] rounded-[100%] rounded-br-none flex items-center justify-center hover:cursor-pointer hover:bg-purple-300">
+            <ArrowLeft
+              size={30}
+              className="hover:rotate-[35deg] transition-all delay-100"
+            />
+          </div>
+        </Link>
+        <h1 className="text-3xl font-bold text-center">Faculty Feedback</h1>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {(faculties.length ? faculties : dummyFaculties).map((faculty) => (
-          <div 
-            key={faculty._id}
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => handleOpenModal(faculty)}
-          >
-            <div className="flex items-center space-x-4">
-              <img
-                src={`/Professors/${faculty._id}.png`}
-                alt={faculty.name}
-                className="w-16 h-16 rounded-full object-cover"
-              />
-              <div>
-                <h3 className="font-semibold text-lg">{faculty.name}</h3>
-                <p className="text-gray-600">{faculty.department}</p>
+        {faculties.map((faculty) => {
+          const hasFeedback = submittedFeedbacks.has(faculty._id);
+          
+          return (
+            <div
+              key={faculty._id}
+              className={`bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all 
+                ${hasFeedback ? 'opacity-60' : 'cursor-pointer'}`}
+              onClick={() => handleOpenModal(faculty)}
+            >
+              <div className="flex items-center space-x-4">
+                <img
+                  src="/Professors/Facultyplaceholder.png"
+                  alt={faculty.name}
+                  className="w-16 h-16 rounded-full object-cover"
+                />
+                <div>
+                  <h3 className="font-semibold text-lg">{faculty.name}</h3>
+                  <p className="text-gray-600">{faculty.department}</p>
+                  {hasFeedback && (
+                    <span className="text-green-600 text-sm font-medium">
+                      Feedback Submitted ✓
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-        <img src="/Professors/1" alt="" srcset="" />
+
       {/* Feedback Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
@@ -125,7 +218,6 @@ const FacultyFeedback = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Overall Rating */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Overall Rating
@@ -146,9 +238,6 @@ const FacultyFeedback = () => {
                 </select>
               </div>
 
-           
-
-              {/* Comments */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Additional Comments

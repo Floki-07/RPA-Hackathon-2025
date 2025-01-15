@@ -101,7 +101,9 @@ const CourseManagement = () => {
               <div className="flex items-center w-full justify-between mt-4">
                 <div className="flex items-center text-gray-600">
                   <MessageCircle size={20} className="mr-2" />
-                  <span>{course.feedbackCount || 0} Feedbacks</span>
+                  <span>{course.feedbacks.length || 0}
+                    {course.feedbacks.length === 1 ? ' Feedback ' : ' Feedbacks'}
+                     </span>
                 </div>
                 <div className='flex items-center space-x-4'>
                   <button className='px-3 py-2 rounded-md bg-green-500 text-white font-semibold'>
