@@ -8,6 +8,9 @@ const mongoose = require('mongoose');
 
 const User = require('../models/UserModel');
 const Admin = require('../models/AdminModel');
+const Faculty = require('../models/FacultyModel');
+const Feedback = require('../models/FeedbackModel');
+const Course = require('../models/CourseModel');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 
@@ -75,6 +78,15 @@ router.get('/faculties',authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Error fetching faculties' });
     }
 });
+router.get('/getuser',authenticateToken, async (req, res) => {
+    try {
+        let user = await User.findOne({_id:req.user.userId});
+        res.status(200).json({user});
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching faculties' });
+    }
+});
 
 // Submit feedback for a faculty
 router.post('/feedback/faculty/:facultyId', authenticateToken, async (req, res) => {
@@ -136,6 +148,72 @@ router.post('/admin/login', async (req, res) => {
         res.json({ token });
     } catch (error) {
         res.status(500).json({ message: 'Error logging in' });
+    }
+});
+
+
+//admin faculty management
+router.post('/admin/addfaculty', async (req, res) => {
+    try {
+        const { name, department } = req.body;
+        console.log(name,department);
+       let newfaculty = new Faculty({name,department});
+        await newfaculty.save();
+        res.status(200).json({ message: 'Faculty added successfully' });      
+    } catch (error) {
+        res.status(500).json({ message: 'Error logging in' });
+    }
+});
+router.get('/admin/allfaculties', async (req, res) => {
+    try {
+        const faculties = await Faculty.find();
+        res.status(200).json({ faculties ,message: 'All faculties found' });      
+    } catch (error) {
+        res.status(500).json({ message: 'Cannot fetch' });
+    }
+});
+router.delete('/admin/deletefaculty/:id', async (req, res) => {
+    try {
+        const faculty = await Faculty.findOneAndDelete({_id:req.params.id});
+        res.status(200).json({ faculty ,message: `${faculty?.name} deleted successfully` });      
+    } catch (error) {
+        res.status(500).json({ message: 'Cannot fetch' });
+    }
+});
+
+
+//admin course management
+router.post('/admin/courses', async (req, res) => {
+    try {
+        const { name, courseCode, department } = req.body;
+        console.log(name,  courseCode, department);
+        let newCourse = new Course({
+            name,
+            courseCode,
+            department
+        });
+        await newCourse.save();
+        res.status(200).json({ message: 'Course added successfully' });      
+    } catch (error) {
+        res.status(500).json({ message: 'Error adding course' });
+    }
+});
+
+router.get('/admin/courses', async (req, res) => {
+    try {
+        const courses = await Course.find();
+        res.status(200).json(courses);      
+    } catch (error) {
+        res.status(500).json({ message: 'Cannot fetch courses' });
+    }
+});
+
+router.delete('/admin/courses/:id', async (req, res) => {
+    try {
+        const course = await Course.findOneAndDelete({_id: req.params.id});
+        res.status(200).json({ course, message: `${course?.name} deleted successfully` });      
+    } catch (error) {
+        res.status(500).json({ message: 'Cannot delete course' });
     }
 });
 

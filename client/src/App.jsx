@@ -10,14 +10,18 @@ import Dashboard from './pages/(User)/Dashboard'
 import { useNavigate } from 'react-router-dom';
 import CourseFeedback from './pages/(User)/CourseFeedback'
 import FacultyFeedback from './pages/(User)/FacultyFeedback'
-import AdminDashboard from './pages/(Admin)/Dashboard'  
-import AdminFaculty from './pages/(Admin)/Faculty'  
 
+import NavBar from './components/Navbar'
+import Error from './pages/Error'
+import CourseManagement from './pages/(Admin)/CourseManagement'
+import FacultyManagement from './pages/(Admin)/FacultyManagement'
+import AdminDashboard from './pages/(Admin)/Dashboard'
 
 
 function AppLayout() {
   return (
     <div className='bg-[--background  ] h-screen text-[--primary]'>
+      <NavBar />
     <div className='flex h-[calc(100%-60px)] custom-scrollbar'>
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -28,9 +32,9 @@ function AppLayout() {
         <Route path="/faculty-feedback" element={<FacultyFeedback />} />
 
 
-
-        <Route path="/admin/dashboard" element={<AdminDashboard/>} />
-        <Route path="/admin/faculty" element={<AdminFaculty/>} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/course-feedback" element={<CourseManagement/>} />
+        <Route path="/admin/faculty-feedback" element={<FacultyManagement/>} />
         <Route path="*" element={<Error />} />
       </Routes>
     </div>

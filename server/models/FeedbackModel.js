@@ -5,6 +5,14 @@ const feedbackSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Faculty'
     },
+    courseId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course'
+    },
+    feedbacktype:{
+        type: String,
+        enum: ['faculty', 'course']
+    },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
