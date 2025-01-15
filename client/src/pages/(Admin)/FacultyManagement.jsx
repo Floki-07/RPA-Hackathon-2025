@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Trash2, MessageCircle, ArrowLeft } from 'lucide-react';
-import { Link } from "react-router";
+import { Link } from 'react-router';
 const FacultyManagement = () => {
     const [faculties, setFaculties] = useState([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -62,7 +62,7 @@ const FacultyManagement = () => {
                 <div className="flex justify-between items-center mb-6">
                     <Link to='/admin/dashboard'>
 
-                        <div className="bg-blue-300 h-[60px] w-[60px] rounded-[100%] rounded-br-none flex items-center justify-center hover:cursor-pointer hover:bg-purple-[--ternary]">
+                        <div className="bg-purple-500 h-[60px] w-[60px] rounded-[100%] rounded-br-none flex items-center justify-center hover:cursor-pointer hover:bg-purple-[--ternary]">
                             <ArrowLeft
                                 size={30}
                                 className="hover:rotate-[35deg] transition-all delay-100"
@@ -102,7 +102,9 @@ const FacultyManagement = () => {
                             <div className="flex items-center w-full justify-between mt-4">
                                 <div className="flex items-center text-gray-600">
                                     <MessageCircle size={20} className="mr-2" />
-                                    <span>{faculty.feedbackCount || 0} Feedbacks</span>
+                                    <span>{faculty.feedbacks.length || 0}
+                                        {faculty.feedbacks.length === 1 ? ' Feedback ' : ' Feedbacks'}
+                                    </span>s
                                 </div>
 
                                 <div className='flex items-center space-x-4 '>
