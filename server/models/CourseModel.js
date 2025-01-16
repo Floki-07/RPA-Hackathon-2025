@@ -16,7 +16,11 @@ const CourseSchema = mongoose.Schema({
     feedbacks: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Feedback'
-    }]
+    }],
+    positive:Number,
+    negative:Number,
+    neutral:Number,
+    avgRating:Number,
 });
 
 const Course = mongoose.model('Course', CourseSchema);

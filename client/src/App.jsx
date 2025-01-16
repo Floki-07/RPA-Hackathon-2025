@@ -5,7 +5,7 @@ import './App.css'
 import { Route,Routes, BrowserRouter as Router } from 'react-router-dom'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
-import Landing from './pages/Landing'
+import LandingMain from './pages/LandingMain'
 import Dashboard from './pages/(User)/Dashboard'
 import { useNavigate } from 'react-router-dom';
 import CourseFeedback from './pages/(User)/CourseFeedback'
@@ -26,7 +26,7 @@ function AppLayout() {
       <NavBar />
     <div className='flex h-[calc(100%-60px)] custom-scrollbar'>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<LandingMain />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />

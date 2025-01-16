@@ -1,6 +1,6 @@
 import React from 'react';
 import { BookOpen, Users, ChevronRight, UserCheck } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ const AdminDashboard = () => {
               onClick={() => navigate('/admin/course-feedback')}
               className='flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors'
             >
-              Review Feedback
+              <Link to="/admin/course-feedback">Review Feedback</Link>
               <ChevronRight size={20} />
             </button>
           </div>

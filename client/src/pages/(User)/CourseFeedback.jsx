@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, ArrowLeft } from 'lucide-react';
 import { Link } from "react-router";
-import axios  from 'axios';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 axios.defaults.withCredentials = true;
-const UserCourses = () => {
+
+const CourseFeedback = () => {
   const [courses, setCourses] = useState([]);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -12,6 +14,8 @@ const UserCourses = () => {
     rating: '',
     comment: ''
   });
+  const [loading, setLoading] = useState(true);
+  const [submittedFeedbacks, setSubmittedFeedbacks] = useState(new Set());
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -20,49 +24,69 @@ const UserCourses = () => {
       [name]: value
     }));
   };
+
   useEffect(() => {
-    fetchCourses();
-    // Load submitted feedbacks from localStorage
+    Promise.all([
+      fetchCourses(),
+      fetchUserSubmittedFeedbacks()
+    ]).then(() => setLoading(false));
   }, []);
-  const [submittedFeedbacks, setSubmittedFeedbacks] = useState(new Set());
-  
+
   const fetchCourses = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:3000/api/courses', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log(response.data);
-      setCourses(response.data);  // axios automatically parses JSON
+      setCourses(response.data);
     } catch (error) {
       console.error('Error fetching courses:', error);
     }
   };
-  
+
+  const fetchUserSubmittedFeedbacks = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:3000/api/feedback/user/submitted', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setSubmittedFeedbacks(new Set(response.data.map(feedback => feedback.courseId)));
+    } catch (error) {
+      console.error('Error fetching submitted feedbacks:', error);
+    }
+  };
+
   const handleSubmitFeedback = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
       await axios.post(
         `http://localhost:3000/api/feedback/course/${selectedCourse._id}`,
-        feedback,  // axios automatically stringifies the body
+        feedback,
         {
           headers: {
             Authorization: `Bearer ${token}`
           }
         }
       );
-  
-      // Update local storage and state to mark feedback as submitted
-      const newSubmittedFeedbacks = new Set(submittedFeedbacks);
-      newSubmittedFeedbacks.add(selectedCourse._id);
-      localStorage.setItem('submittedFeedbacks', JSON.stringify([...newSubmittedFeedbacks]));
-      setSubmittedFeedbacks(newSubmittedFeedbacks);
-  
-      // Reset and close modal
+
+      // Update the submittedFeedbacks state immediately
+      setSubmittedFeedbacks(prev => new Set([...prev, selectedCourse._id]));
+      toast.success('Feedback Submitted successfully!', {
+        position: 'bottom-right',
+        duration: 3000,
+        style: {
+            backgroundColor: 'green',
+            color: 'white',
+            fontSize: '16px',
+        }
+    });
+      // Reset feedback form and close modal
       setFeedback({ rating: '', comment: '' });
       setIsFeedbackModalOpen(false);
-      fetchCourses();
+      fetchCourses(); // Keep your original fetch after submission
     } catch (error) {
       console.error('Error submitting feedback:', error);
     }
@@ -94,9 +118,11 @@ const UserCourses = () => {
             const hasFeedback = submittedFeedbacks.has(course._id);
             
             return (
-              <div 
-                key={course._id} 
-                className={`bg-white rounded-lg shadow-md p-6 ${hasFeedback ? 'opacity-60' : ''}`}
+              <div
+                key={course._id}
+                className={`bg-white rounded-lg shadow-md p-6 transition-opacity duration-300 ${
+                  hasFeedback ? 'opacity-60' : 'opacity-100'
+                }`}
               >
                 <div>
                   <h3 className="font-semibold text-lg">{course.name}</h3>
@@ -104,16 +130,14 @@ const UserCourses = () => {
                   <p className="text-gray-600">Department: {course.department}</p>
                 </div>
                 <div className="flex items-center w-full justify-between mt-4">
-                  
-                  {!hasFeedback && (
-                    <button 
+                  {!hasFeedback ? (
+                    <button
                       onClick={() => openFeedbackModal(course)}
                       className="px-3 py-2 rounded-md bg-blue-500 text-white font-semibold hover:bg-blue-600"
                     >
                       Give Feedback
                     </button>
-                  )}
-                  {hasFeedback && (
+                  ) : (
                     <span className="text-green-600 font-medium">Feedback Submitted</span>
                   )}
                 </div>
@@ -135,27 +159,28 @@ const UserCourses = () => {
                     Rating (1-5)
                   </label>
                   <select
-                  name="rating"
-                  value={feedback.rating}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md"
-                  required
-                >
-                  <option value="">Select rating</option>
-                  <option value="5">Excellent (5)</option>
-                  <option value="4">Very Good (4)</option>
-                  <option value="3">Good (3)</option>
-                  <option value="2">Fair (2)</option>
-                  <option value="1">Poor (1)</option>
-                </select>
+                    name="rating"
+                    value={feedback.rating}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded-md"
+                    required
+                  >
+                    <option value="">Select rating</option>
+                    <option value="5">Excellent (5)</option>
+                    <option value="4">Very Good (4)</option>
+                    <option value="3">Good (3)</option>
+                    <option value="2">Fair (2)</option>
+                    <option value="1">Poor (1)</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Comments
                   </label>
                   <textarea
+                    name="comment"
                     value={feedback.comment}
-                    onChange={(e) => setFeedback({ ...feedback, comment: e.target.value })}
+                    onChange={handleInputChange}
                     className="w-full p-2 border rounded-md h-32"
                     required
                   />
@@ -184,4 +209,4 @@ const UserCourses = () => {
   );
 };
 
-export default UserCourses;
+export default CourseFeedback;
