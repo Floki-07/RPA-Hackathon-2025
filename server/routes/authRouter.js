@@ -12,7 +12,9 @@ const Faculty = require('../models/FacultyModel');
 const Feedback = require('../models/FeedbackModel');
 const Course = require('../models/CourseModel');
 const JWT_SECRET = process.env.JWT_SECRET;
-
+const path = require('path');
+const fs = require('fs');
+const XLSX = require('xlsx');
 
 
 router.post('/signup', async (req, res) => {
@@ -101,6 +103,8 @@ router.get('/feedback/user/submitted', authenticateToken, async (req, res) => {
     try {   
         const feedbacks = await Feedback.find({ userId: req.userId });
         res.status(200).json(feedbacks);
+        console.log(feedbacks);
+        
     } catch (error) {   
         res.status(500).json({ message: 'Error fetching feedbacks' });
     }   
@@ -285,6 +289,96 @@ router.delete('/admin/courses/:id', async (req, res) => {
         res.status(200).json({ course, message: `${course?.name} deleted successfully` });      
     } catch (error) {
         res.status(500).json({ message: 'Cannot delete course' });
+    }
+});
+
+
+router.get('/admin/course/feedback/:id', async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+        if (!course) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+
+        // Fetch the feedbacks for the course
+        const feedbacks = await Feedback.find({ courseId: req.params.id });
+
+        // Prepare feedback data for Excel
+        const feedbackData = feedbacks.map((feedback, index) => ({
+            'CommentsReview': feedback.comments,
+            'AI Prediction':'',
+            'Confidence Score':'',
+        }));
+
+
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(feedbackData);
+
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+        // Define the file path
+        // \Desktop\RPA Project\excel
+        const folderPath = path.join('C:', 'Users', 'LENOVO', 'Desktop', 'RPA Project', 'excel');
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true }); // Create the directory if it doesn't exist
+        }
+        const filePath = path.join(folderPath, `${course.name}_Feedback_Report.xlsx`);
+
+        // Write the Excel file to the specified location
+        XLSX.writeFile(wb, filePath);
+
+        // Respond with success message
+        res.status(200).json({
+            message: 'Feedback report generated successfully',
+            filePath
+        });        
+    } catch (error) {
+        res.status(500).json({ message: 'Error in finding feedbacks course' });
+    }
+});
+
+router.get('/admin/faculty/feedback/:id', async (req, res) => {
+    try {
+        const faculty = await Faculty.findById(req.params.id);
+        if (!faculty) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+        // Fetch the feedbacks for the course
+        const feedbacks = await Feedback.find({ facultyId: req.params.id });
+        console.log(feedbacks)
+        // Prepare feedback data for Excel
+        const feedbackData = feedbacks.map((feedback, index) => ({
+            'CommentsReview': feedback.comments,
+            'AI Prediction':'',
+            'Confidence Score':'',
+        }));
+
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(feedbackData);
+
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+        // Define the file path
+        const folderPath = path.join('C:', 'Users', 'LENOVO', 'Desktop', 'RPA Project', 'excel');
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true }); // Create the directory if it doesn't exist
+        }
+        const filePath = path.join(folderPath, `${faculty.name}_Feedback_Report.xlsx`);
+
+        // Write the Excel file to the specified location
+        XLSX.writeFile(wb, filePath);
+
+        // Respond with success message
+        res.status(200).json({
+            message: 'Feedback report generated successfully',
+            filePath
+        });        
+    } catch (error) {
+        res.status(500).json({ message: 'Error in finding feedbacks course' });
     }
 });
 

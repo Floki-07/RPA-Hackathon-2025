@@ -14,7 +14,6 @@ const FacultyFeedback = () => {
   });
   const [loading, setLoading] = useState(true);
   const [submittedFeedbacks, setSubmittedFeedbacks] = useState(new Set());
-  
   useEffect(() => {
     Promise.all([
       fetchFaculties(),
@@ -146,6 +145,8 @@ const FacultyFeedback = () => {
     }
   };
 
+  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -178,7 +179,8 @@ const FacultyFeedback = () => {
               key={faculty._id}
               className={`bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-all 
                 ${hasFeedback ? 'opacity-60' : 'cursor-pointer'}`}
-              onClick={() => handleOpenModal(faculty)}
+                onClick={() => handleOpenModal(faculty)}
+
             >
               <div className="flex items-center space-x-4">
                 <img
