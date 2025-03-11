@@ -5,7 +5,7 @@ This repository contains a full-stack application built with the MERN stack (Mon
 ## Project Structure
 
 ```
-mern-app/
+Your folder/
 ├── client/            # Frontend React application
 └── server/            # Backend Node.js/Express application
 ```
@@ -23,8 +23,7 @@ Before getting started, make sure you have the following installed:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/mern-app.git
-cd mern-app
+git clone https://github.com/Floki-07/RPA-Hackathon-2025.git
 ```
 
 ### Server Setup
@@ -49,7 +48,7 @@ cd mern-app
 4. Start the server:
    ```bash
    # Development mode
-   npm run dev
+   nodemon ./app.js`
    
    # Production mode
    npm start
@@ -67,45 +66,19 @@ cd mern-app
    npm install
    ```
 
-3. Create a `.env` file in the client directory:
-   ```
-   REACT_APP_API_URL=http://localhost:5000/api
-   ```
-
 4. Start the client:
-   ```bash
-   npm start
-   ```
+ 
 
 ## Available Scripts
 
 ### Server
 
-- `npm start`: Starts the server in production mode
-- `npm run dev`: Starts the server in development mode with nodemon
-- `npm test`: Runs server tests
+- `nodemon ./app.js`: Starts the server in development mode with nodemon
 
 ### Client
 
-- `npm start`: Starts the development server
-- `npm build`: Builds the app for production
-- `npm test`: Runs client tests
-- `npm run eject`: Ejects from Create React App configuration
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login a user
-- `GET /api/auth/user` - Get current user information
-
-### Users
-- `GET /api/users` - Get all users
-- `GET /api/users/:id` - Get user by ID
-- `PUT /api/users/:id` - Update user
-- `DELETE /api/users/:id` - Delete user
-
-## Folder Structure
+- `npm run dev`: Starts the development server
+- 
 
 ### Client
 ```
@@ -138,18 +111,6 @@ server/
 ├── index.js             # Server entry point
 └── package.json         # Dependencies and scripts
 ```
-
-## Deployment
-
-### Backend Deployment
-1. Set up a MongoDB Atlas account or other MongoDB hosting
-2. Deploy your server to a hosting service (Heroku, AWS, etc.)
-3. Set the environment variables in your hosting service
-
-### Frontend Deployment
-1. Build the React application: `cd client && npm run build`
-2. Deploy the build folder to a static hosting service (Netlify, Vercel, etc.)
-3. Configure the production API URL
 
 ## Contributing
 
