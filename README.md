@@ -1,6 +1,27 @@
-# 🚀 FeedBot – AI-Powered MERN App with RPA Automation 🤖
+# 🚀 FeedBot – AI-Powered Feedback Management System 🤖
 
-This repository contains a full-stack application built with the MERN stack (MongoDB, Express.js, React.js, Node.js).
+FeedBot is a full-stack MERN application integrated with Robotic Process Automation (RPA) and AI to streamline student feedback collection, analysis, and visualization. It enables administrators to manage faculty and course feedback efficiently while automating the evaluation process.
+
+## 🎯 How It Works?  
+1️⃣ **Students** submit feedback on different faculty members and courses via the frontend.  
+2️⃣ **Admins** can download the collected feedback as an **Excel file**.  
+3️⃣ **RPA triggers an AI model** to analyze and quantify the feedback, providing structured ratings.  
+4️⃣ **A detailed report** is generated and can be downloaded or visualized on the frontend.
+
+## 🌟 Key Features  
+✅ **User-Friendly Feedback Collection** – Students can easily submit course and faculty feedback.  
+✅ **Admin Control Panel** – Admins can manage courses, faculty, and download feedback reports.  
+✅ **AI-Powered Analysis** – RPA processes raw feedback to generate structured ratings.  
+✅ **Excel Report Generation** – Feedback data is downloadable in an Excel format.  
+✅ **Data Visualization** – Reports are displayed using interactive graphs and charts.
+
+## 🛠️ Tech Stack  
+- **Frontend:** React.js  
+- **Backend:** Node.js, Express.js  
+- **Database:** MongoDB  
+- **Automation:** RPA (UiPath or Python-based automation)  
+- **AI Integration:** Sentiment Analysis & Feedback Quantification  
+
 
 ## Project Structure
 
