@@ -1,4 +1,4 @@
-# MERN Stack Application
+# 🚀 FeedBot – AI-Powered MERN App with RPA Automation 🤖
 
 This repository contains a full-stack application built with the MERN stack (MongoDB, Express.js, React.js, Node.js).
 
